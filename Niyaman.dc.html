@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_ds/industry-104af37c-3ed7-4b86-a702-35cfb3e2116a/styles.css">
+  <script src="_ds/industry-104af37c-3ed7-4b86-a702-35cfb3e2116a/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; }
+    ::selection { background: oklch(85% 0.05 190); }
+  </style>
+</helmet>
+
+<sc-if value="{{ printMode }}" hint-placeholder-val="{{ false }}">
+  <div style="max-width:780px;margin:0 auto;padding:48px;background:oklch(99% 0.002 90);font-family:'Source Serif 4',Georgia,serif;color:oklch(18% 0.01 90);line-height:1.7;font-size:15px;">
+    <p style="text-align:right;margin-bottom:24px"><button onClick="{{ exitPrintMode }}" style="font-family:'Public Sans',sans-serif;font-size:12px;padding:6px 12px;border-radius:6px;border:1px solid oklch(80% 0.01 90);background:oklch(97% 0.005 90);cursor:pointer">Close print view</button></p>
+    <div dangerouslySetInnerHTML="{{ printDocHtml }}"></div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ notPrintMode }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;height:100vh;background:oklch(97% 0.006 90);font-family:'Public Sans',sans-serif;color:oklch(20% 0.01 90);overflow:hidden;">
+
+  <div style="width:250px;flex-shrink:0;background:oklch(23% 0.02 250);color:oklch(92% 0.01 250);display:flex;flex-direction:column;padding:20px 16px;">
+    <div style="margin-bottom:22px;">
+      <div style="font-size:20px;font-weight:700;letter-spacing:0.3px;">Niyaman</div>
+      <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:13px;color:oklch(70% 0.02 250);margin-top:2px;">नियमन — OCR अनुपालन</div>
+    </div>
+    <select value="{{ currentWorkspaceId }}" onChange="{{ onWorkspaceChange }}" style="width:100%;padding:9px 10px;border-radius:8px;border:1px solid oklch(35% 0.02 250);background:oklch(28% 0.02 250);color:oklch(95% 0.01 250);font-size:13px;margin-bottom:22px;">
+      <sc-for list="{{ workspaces }}" as="ws" hint-placeholder-count="2">
+        <option value="{{ ws.id }}">{{ ws.name }}</option>
+      </sc-for>
+    </select>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <button onClick="{{ goDashboard }}" style="text-align:left;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;background:{{ dashboardNavBg }};color:{{ dashboardNavColor }};">Companies</button>
+      <button onClick="{{ goNotifications }}" style="text-align:left;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;background:{{ notifNavBg }};color:{{ notifNavColor }};display:flex;justify-content:space-between;align-items:center;">
+        <span>Notifications</span>
+        <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}">
+          <span style="background:oklch(62% 0.18 30);color:white;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;">{{ unreadCount }}</span>
+        </sc-if>
+      </button>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="font-size:11px;color:oklch(60% 0.02 250);line-height:1.5;">Prototype workspace — no OCR/CAMIS integration. Documents are for demo purposes.</div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;position:relative;">
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:sticky;top:0;z-index:20;background:oklch(23% 0.02 250);color:white;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+        <span style="font-size:13px;">{{ toast.message }}</span>
+        <button onClick="{{ dismissToast }}" style="background:transparent;border:1px solid oklch(50% 0.02 250);color:white;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;">Dismiss</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ viewDashboard }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:32px 40px;max-width:1100px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+          <div>
+            <h1 style="font-size:24px;margin:0;">Companies</h1>
+            <div style="font-size:13px;color:oklch(45% 0.01 90);margin-top:4px;">{{ currentWorkspaceTagline }}</div>
+          </div>
+          <button onClick="{{ startNewCompany }}" style="background:oklch(40% 0.09 190);color:white;border:none;padding:11px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">+ New Company</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
+          <sc-for list="{{ companyCards }}" as="co" hint-placeholder-count="3">
+            <div onClick="{{ co.onOpen }}" style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:18px;cursor:pointer;">
+              <div style="font-size:16px;font-weight:600;">{{ co.nameEnglish }}</div>
+              <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:13px;color:oklch(45% 0.01 90);margin-top:2px;">{{ co.nameNepali }}</div>
+              <div style="font-size:12px;color:oklch(45% 0.01 90);margin-top:10px;">{{ co.typeLabel }}</div>
+              <div style="font-size:12px;color:oklch(45% 0.01 90);margin-top:2px;">Reg. No: {{ co.regDisplay }}</div>
+              <div style="margin-top:12px;">
+                <span style="{{ co.badgeStyle }}">{{ co.badgeLabel }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ noCompanies }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:60px 0;text-align:center;color:oklch(50% 0.01 90);font-size:14px;">No companies in this workspace yet. Click "+ New Company" to add one.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ viewCompanyForm }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px;max-width:820px;">
+        <h1 style="font-size:22px;margin:0 0 4px;">{{ formHeading }}</h1>
+        <div style="font-size:13px;color:oklch(45% 0.01 90);margin-bottom:24px;">Structured data entered here is reused automatically in every generated document.</div>
+
+        <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:22px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:oklch(40% 0.09 190);margin-bottom:14px;">Identity</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Company Name (English)
+              <input type="text" value="{{ draft.nameEnglish }}" onChange="{{ onDraftNameEnglish }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Company Name (Nepali)
+              <input type="text" value="{{ draft.nameNepali }}" onChange="{{ onDraftNameNepali }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;font-family:'Noto Sans Devanagari',sans-serif;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Category
+              <select value="{{ draft.category }}" onChange="{{ onDraftCategory }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;">
+                <sc-for list="{{ categories }}" as="c" hint-placeholder-count="4"><option value="{{ c.code }}">{{ c.label }}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Type
+              <select value="{{ draft.type }}" onChange="{{ onDraftType }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;">
+                <sc-for list="{{ types }}" as="t" hint-placeholder-count="5"><option value="{{ t.code }}">{{ t.label }}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Already registered with OCR?
+              <select value="{{ draft.registeredWithOcrStr }}" onChange="{{ onDraftRegisteredWithOcr }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;">
+                <option value="no">Not yet — pre-registration</option>
+                <option value="yes">Yes, already registered</option>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Registration Number
+              <input type="text" placeholder="Leave blank if not yet registered" value="{{ draft.registrationNumber }}" onChange="{{ onDraftRegNumber }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Incorporation Date
+              <input type="date" value="{{ draft.incorporationDate }}" onChange="{{ onDraftIncorpDate }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Fiscal Year-End Convention
+              <input type="text" value="{{ draft.fiscalYearEndConvention }}" onChange="{{ onDraftFyEnd }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;margin-top:14px;">Registered Address
+            <input type="text" value="{{ draft.registeredAddress }}" onChange="{{ onDraftAddress }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+          </label>
+        </div>
+
+        <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:22px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:oklch(40% 0.09 190);margin-bottom:14px;">Objectives (NISC codes)</div>
+          <div style="position:relative;margin-bottom:12px;">
+            <input type="text" placeholder="Search NISC code, English or Nepali name…" value="{{ niscQuery }}" onChange="{{ onNiscQueryChange }}" style="width:100%;padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;box-sizing:border-box;"/>
+            <sc-if value="{{ hasNiscResults }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid oklch(88% 0.005 90);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.08);z-index:10;max-height:260px;overflow-y:auto;">
+                <sc-for list="{{ niscResults }}" as="n" hint-placeholder-count="4">
+                  <div onClick="{{ n.onAdd }}" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid oklch(94% 0.005 90);font-size:13px;">
+                    <strong>{{ n.code }}</strong> — {{ n.nameEnglish }}
+                    <div style="font-family:'Noto Sans Devanagari',sans-serif;color:oklch(45% 0.01 90);font-size:12px;">{{ n.nameNepali }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ objectiveRows }}" as="o" hint-placeholder-count="1">
+              <div style="display:flex;justify-content:space-between;align-items:center;background:oklch(96% 0.01 190);border-radius:8px;padding:9px 12px;">
+                <div style="font-size:13px;"><strong>{{ o.niscCode }}</strong> — {{ o.nameEnglish }} <span style="font-family:'Noto Sans Devanagari',sans-serif;color:oklch(45% 0.01 90);">({{ o.nameNepali }})</span></div>
+                <button onClick="{{ o.onRemove }}" style="background:transparent;border:none;color:oklch(50% 0.15 25);cursor:pointer;font-size:13px;">Remove</button>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noObjectives }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:12px;color:oklch(50% 0.01 90);">No objectives added yet.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:22px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:oklch(40% 0.09 190);margin-bottom:14px;">Share Capital</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Authorized Capital (NPR)
+              <input type="number" value="{{ draft.authorizedCapital }}" onChange="{{ onDraftAuthCap }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Issued Capital (NPR)
+              <input type="number" value="{{ draft.issuedCapital }}" onChange="{{ onDraftIssuedCap }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Paid-up Capital (NPR)
+              <input type="number" value="{{ draft.paidUpCapital }}" onChange="{{ onDraftPaidCap }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;">Par Value / Share
+              <input type="number" value="{{ draft.parValue }}" onChange="{{ onDraftParValue }}" style="padding:9px 10px;border-radius:7px;border:1px solid oklch(85% 0.005 90);font-size:14px;"/>
+            </label>
+          </div>
+        </div>
+
+        <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:22px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:oklch(40% 0.09 190);">Shareholders</div>
+            <button onClick="{{ addShareholderToDraft }}" style="background:oklch(96% 0.01 190);border:1px solid oklch(85% 0.03 190);border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;">+ Add Shareholder</button>
+          </div>
+          <sc-for list="{{ shareholderRows }}" as="s" hint-placeholder-count="1">
+            <div style="display:grid;grid-template-columns:1.4fr 1.4fr 0.8fr 0.9fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center;">
+              <input type="text" placeholder="Name" value="{{ s.name }}" onChange="{{ s.onNameChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="text" placeholder="Citizenship / registration ref" value="{{ s.citizenshipRef }}" onChange="{{ s.onCitizenshipChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="number" placeholder="Shares" value="{{ s.shares }}" onChange="{{ s.onSharesChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="text" placeholder="Share class" value="{{ s.shareClass }}" onChange="{{ s.onClassChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="text" placeholder="Contact" value="{{ s.contact }}" onChange="{{ s.onContactChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <button onClick="{{ s.onRemove }}" style="background:transparent;border:none;color:oklch(50% 0.15 25);cursor:pointer;font-size:13px;">✕</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noShareholders }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:oklch(50% 0.01 90);">No shareholders added yet.</div></sc-if>
+        </div>
+
+        <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:22px;margin-bottom:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:oklch(40% 0.09 190);">Directors</div>
+            <button onClick="{{ addDirectorToDraft }}" style="background:oklch(96% 0.01 190);border:1px solid oklch(85% 0.03 190);border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;">+ Add Director</button>
+          </div>
+          <sc-for list="{{ directorRows }}" as="d" hint-placeholder-count="1">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center;">
+              <input type="text" placeholder="Name" value="{{ d.name }}" onChange="{{ d.onNameChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="text" placeholder="Role" value="{{ d.role }}" onChange="{{ d.onRoleChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="date" value="{{ d.appointmentDate }}" onChange="{{ d.onAppointmentChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <input type="text" placeholder="Contact" value="{{ d.contact }}" onChange="{{ d.onContactChange }}" style="padding:7px 9px;border-radius:6px;border:1px solid oklch(85% 0.005 90);font-size:13px;"/>
+              <button onClick="{{ d.onRemove }}" style="background:transparent;border:none;color:oklch(50% 0.15 25);cursor:pointer;font-size:13px;">✕</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noDirectors }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:oklch(50% 0.01 90);">No directors added yet.</div></sc-if>
+        </div>
+
+        <div style="display:flex;gap:10px;padding-bottom:60px;">
+          <button onClick="{{ saveCompanyDraft }}" style="background:oklch(40% 0.09 190);color:white;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Company</button>
+          <button onClick="{{ cancelCompanyDraft }}" style="background:white;border:1px solid oklch(85% 0.005 90);padding:11px 20px;border-radius:8px;font-size:14px;cursor:pointer;">Cancel</button>
+          <sc-if value="{{ showDeleteButton }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ onDeleteCompany }}" style="margin-left:auto;background:white;border:1px solid oklch(80% 0.1 25);color:oklch(50% 0.15 25);padding:11px 20px;border-radius:8px;font-size:14px;cursor:pointer;">Delete Company</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ viewCompanyDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px;max-width:1000px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <h1 style="font-size:22px;margin:0;">{{ selCo.nameEnglish }}</h1>
+            <div style="font-family:'Noto Sans Devanagari',sans-serif;font-size:14px;color:oklch(45% 0.01 90);margin-top:2px;">{{ selCo.nameNepali }}</div>
+          </div>
+          <button onClick="{{ startAgmFromHeader }}" style="background:oklch(40% 0.09 190);color:white;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Start AGM Cycle</button>
+        </div>
+        <div style="display:flex;gap:4px;border-bottom:1px solid oklch(88% 0.005 90);margin:20px 0 24px;">
+          <button onClick="{{ tabOverviewClick }}" style="padding:10px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;border-bottom:2px solid {{ tabOverviewBorder }};color:{{ tabOverviewColor }};">Overview</button>
+          <button onClick="{{ tabProfileClick }}" style="padding:10px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;border-bottom:2px solid {{ tabProfileBorder }};color:{{ tabProfileColor }};">Profile</button>
+          <button onClick="{{ tabComplianceClick }}" style="padding:10px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;border-bottom:2px solid {{ tabComplianceBorder }};color:{{ tabComplianceColor }};">Compliance</button>
+          <button onClick="{{ tabAgmClick }}" style="padding:10px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;border-bottom:2px solid {{ tabAgmBorder }};color:{{ tabAgmColor }};">AGM Cycles</button>
+        </div>
+
+        <sc-if value="{{ tabOverviewActive }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+            <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:16px;">
+              <div style="font-size:12px;color:oklch(45% 0.01 90);text-transform:uppercase;letter-spacing:0.3px;">Registration</div>
+              <div style="font-size:14px;margin-top:6px;">{{ selCo.typeLabel }}</div>
+              <div style="font-size:13px;color:oklch(45% 0.01 90);margin-top:2px;">Reg. No: {{ selCo.regDisplay }}</div>
+            </div>
+            <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:16px;">
+              <div style="font-size:12px;color:oklch(45% 0.01 90);text-transform:uppercase;letter-spacing:0.3px;">People</div>
+              <div style="font-size:14px;margin-top:6px;">{{ selCo.shareholderCount }} shareholders</div>
+              <div style="font-size:13px;color:oklch(45% 0.01 90);margin-top:2px;">{{ selCo.directorCount }} directors</div>
+            </div>
+            <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:16px;">
+              <div style="font-size:12px;color:oklch(45% 0.01 90);text-transform:uppercase;letter-spacing:0.3px;">Capital</div>
+              <div style="font-size:14px;margin-top:6px;">NPR {{ selCo.paidUpCapitalDisplay }} paid-up</div>
+              <div style="font-size:13px;color:oklch(45% 0.01 90);margin-top:2px;">of NPR {{ selCo.authorizedCapitalDisplay }} authorized</div>
+            </div>
+          </div>
+          <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:18px;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Upcoming Compliance</div>
+            <sc-for list="{{ complianceRowsShort }}" as="ci" hint-placeholder-count="1">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid oklch(95% 0.005 90);">
+                <span style="font-size:13px;">{{ ci.label }}</span>
+                <span style="{{ ci.badgeStyle }}">{{ ci.statusLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabProfileActive }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px;color:oklch(45% 0.01 90);">Loading profile editor…</div>
+        </sc-if>
+
+        <sc-if value="{{ tabComplianceActive }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ complianceRowsFull }}" as="ci" hint-placeholder-count="2">
+              <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+                <div>
+                  <div style="font-size:14px;font-weight:600;">{{ ci.label }}</div>
+                  <div style="font-size:12px;color:oklch(45% 0.01 90);margin-top:4px;">{{ ci.ruleText }}</div>
+                  <div style="font-size:11px;color:oklch(55% 0.01 90);margin-top:2px;">{{ ci.legalRef }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
+                  <span style="{{ ci.badgeStyle }}">{{ ci.statusLabel }}</span>
+                  <label style="font-size:12px;display:flex;align-items:center;gap:5px;">
+                    <input type="checkbox" checked="{{ ci.completed }}" onChange="{{ ci.onToggle }}"/> Mark completed
+                  </label>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabAgmActive }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ agmCycleRows }}" as="ag" hint-placeholder-count="1">
+              <div onClick="{{ ag.onOpen }}" style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:12px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                <div>
+                  <div style="font-size:14px;font-weight:600;">AGM — FY {{ ag.fiscalYear }}</div>
+                  <div style="font-size:12px;color:oklch(45% 0.01 90);margin-top:4px;">{{ ag.meetingDateDisplay }}</div>
+                </div>
+                <span style="{{ ag.statusBadgeStyle }}">{{ ag.status }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noAgmCycles }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:13px;color:oklch(50% 0.01 90);padding:20px 0;">No AGM cycles yet for this company. Click "+ Start AGM Cycle" above.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ viewAgm }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:var(--space-8) var(--space-8);max-width:1140px;font-family:var(--font-body);">
+        <button class="btn btn-ghost" onClick="{{ backToAgmTab }}" style="padding-left:0;margin-bottom:var(--space-3);">← Back to {{ selCo.nameEnglish }}</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-5);flex-wrap:wrap;gap:var(--space-3);">
+          <h1 style="font-family:var(--font-heading);font-size:28px;margin:0;">AGM Cycle — FY {{ selAgm.fiscalYearOrPlaceholder }}</h1>
+          <div style="display:flex;gap:var(--space-2);align-items:center;">
+            <span class="tag {{ selAgm.statusTagClass }}">{{ selAgm.status }}</span>
+            <button class="btn btn-secondary blueprint" onClick="{{ markAgmHeld }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Mark Held</button>
+            <button class="btn btn-primary blueprint" onClick="{{ markAgmFiled }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Mark Filed with OCR</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:340px 1fr;gap:var(--space-5);align-items:flex-start;">
+          <div class="card blueprint elev-sm" style="padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="card-kicker">Meeting Inputs</div>
+            <div class="field"><label>Fiscal Year</label><input class="input" type="text" placeholder="e.g. 2082/83" value="{{ selAgm.fiscalYear }}" onChange="{{ onAgmFiscalYear }}"/></div>
+            <div class="field"><label>Meeting Date</label><input class="input" type="date" value="{{ selAgm.meetingDate }}" onChange="{{ onAgmMeetingDate }}"/></div>
+
+            <div class="field"><label>Agenda Items</label>
+              <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                <sc-for list="{{ agendaRows }}" as="a" hint-placeholder-count="2">
+                  <div style="display:flex;gap:6px;">
+                    <input class="input" type="text" value="{{ a.text }}" onChange="{{ a.onChange }}" style="flex:1;"/>
+                    <button class="btn btn-ghost btn-icon" onClick="{{ a.onRemove }}" aria-label="Remove">✕</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <button class="btn btn-secondary blueprint" onClick="{{ addAgendaItem }}" style="align-self:flex-start;"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>+ Add agenda item</button>
+
+            <div class="card-kicker" style="margin-top:var(--space-2);">Decisions</div>
+            <label class="radio" style="font-size:13px;">
+              <input type="checkbox" checked="{{ selAgm.decisions.dividendDeclared }}" onChange="{{ onDividendDeclaredToggle }}"/><span class="dot"></span>Dividend declared
+            </label>
+            <div class="field"><label>Dividend %</label><input class="input" type="text" value="{{ selAgm.decisions.dividendPercent }}" onChange="{{ onDividendPercent }}"/></div>
+            <div class="field"><label>Auditor appointment / reappointment</label><input class="input" type="text" value="{{ selAgm.decisions.auditorAppointment }}" onChange="{{ onAuditorAppointment }}"/></div>
+            <div class="field"><label>Director changes (or "None")</label><input class="input" type="text" value="{{ selAgm.decisions.directorChanges }}" onChange="{{ onDirectorChanges }}"/></div>
+            <div class="field"><label>Remuneration notes</label><input class="input" type="text" value="{{ selAgm.decisions.remuneration }}" onChange="{{ onRemuneration }}"/></div>
+
+            <div class="field"><label>Raw Discussion Notes</label><textarea class="input" rows="6" placeholder="Bullet points / rough notes from the meeting…" value="{{ selAgm.discussionNotes }}" onChange="{{ onDiscussionNotes }}"></textarea></div>
+          </div>
+
+          <div class="card blueprint elev-sm" style="padding:0;overflow:hidden;">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="padding:var(--space-4) var(--space-4) 0;">
+              <div class="seg" role="radiogroup" style="flex-wrap:wrap;">
+                <label class="seg-opt"><input type="radio" name="doctab" checked="{{ docTabMinutesActive }}" onChange="{{ docTabMinutesClick }}"/>Minutes</label>
+                <label class="seg-opt"><input type="radio" name="doctab" checked="{{ docTabNoticeActive }}" onChange="{{ docTabNoticeClick }}"/>Notice</label>
+                <label class="seg-opt"><input type="radio" name="doctab" checked="{{ docTabBoardActive }}" onChange="{{ docTabBoardClick }}"/>Board Report</label>
+                <label class="seg-opt"><input type="radio" name="doctab" checked="{{ docTabAuditorActive }}" onChange="{{ docTabAuditorClick }}"/>Auditor</label>
+                <label class="seg-opt"><input type="radio" name="doctab" checked="{{ docTabGenerateActive }}" onChange="{{ docTabGenerateClick }}"/>Generate Document</label>
+              </div>
+            </div>
+
+            <sc-if value="{{ docTabMinutesActive }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:var(--space-4);">
+                <sc-if value="{{ hasMinutesDoc }}" hint-placeholder-val="{{ false }}">
+                  <div contentEditable="true" suppressContentEditableWarning="{{ true }}" onBlur="{{ minutesOnBlur }}" dangerouslySetInnerHTML="{{ minutesHtml }}" style="font-family:'Source Serif 4',Georgia,serif;font-size:14px;line-height:1.7;background:var(--color-bg);border:1px solid var(--color-neutral-300);border-radius:var(--radius-sm);padding:20px;min-height:240px;max-height:420px;overflow-y:auto;margin-bottom:var(--space-3);"></div>
+                  <div style="display:flex;gap:8px;margin-bottom:var(--space-3);">
+                    <input class="input" type="text" placeholder='Refine instruction, e.g. "make it more formal" or "add auditor clause"' value="{{ refineInstruction }}" onChange="{{ onRefineInstructionChange }}" style="flex:1;"/>
+                    <button class="btn btn-primary blueprint" onClick="{{ refineMinutes }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Regenerate</button>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-bottom:var(--space-3);">
+                    <button class="btn btn-secondary blueprint" onClick="{{ exportMinutesPdf }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export PDF</button>
+                    <button class="btn btn-secondary blueprint" onClick="{{ exportMinutesDocx }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export DOCX</button>
+                  </div>
+                  <sc-if value="{{ hasMinutesVersions }}" hint-placeholder-val="{{ false }}">
+                    <div class="card-kicker" style="margin-bottom:6px;">Version History</div>
+                    <sc-for list="{{ minutesVersionRows }}" as="v" hint-placeholder-count="1">
+                      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--color-neutral-100);border-radius:var(--radius-sm);margin-bottom:5px;">
+                        <span style="font-size:12px;color:var(--color-neutral-700);">{{ v.label }}</span>
+                        <button class="btn btn-ghost" onClick="{{ v.onRevert }}" style="padding:2px 8px;">Revert to this</button>
+                      </div>
+                    </sc-for>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ noMinutesDoc }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:13px;color:var(--color-neutral-700);margin-bottom:var(--space-3);">Provide discussion notes on the left, then generate a formal AI-assisted first draft.</div>
+                  <button class="btn btn-primary blueprint" onClick="{{ generateMinutes }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Generate AI Draft</button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ docTabNoticeActive }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:var(--space-4);">
+                <sc-if value="{{ hasNoticeDoc }}" hint-placeholder-val="{{ false }}">
+                  <div contentEditable="true" suppressContentEditableWarning="{{ true }}" onBlur="{{ noticeOnBlur }}" dangerouslySetInnerHTML="{{ noticeHtml }}" style="font-family:'Source Serif 4',Georgia,serif;font-size:14px;line-height:1.7;background:var(--color-bg);border:1px solid var(--color-neutral-300);border-radius:var(--radius-sm);padding:20px;min-height:240px;max-height:420px;overflow-y:auto;margin-bottom:var(--space-3);"></div>
+                  <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="btn btn-secondary blueprint" onClick="{{ exportNoticePdf }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export PDF</button>
+                    <button class="btn btn-secondary blueprint" onClick="{{ exportNoticeDocx }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export DOCX</button>
+                    <button class="btn btn-ghost" onClick="{{ generateNotice }}" style="margin-left:auto;">Regenerate from data</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ noNoticeDoc }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:13px;color:var(--color-neutral-700);margin-bottom:var(--space-3);">Generates a board-approved AGM notice citing the 21-day statutory notice period (Companies Act §76).</div>
+                  <button class="btn btn-primary blueprint" onClick="{{ generateNotice }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Generate Notice</button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ docTabBoardActive }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:var(--space-4);">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:var(--space-3);">
+                  <input class="input" type="text" placeholder="Revenue (NPR)" value="{{ selAgm.financials.revenue }}" onChange="{{ onFinRevenue }}"/>
+                  <input class="input" type="text" placeholder="Net Profit (NPR)" value="{{ selAgm.financials.netProfit }}" onChange="{{ onFinNetProfit }}"/>
+                  <input class="input" type="text" placeholder="Total Assets (NPR)" value="{{ selAgm.financials.totalAssets }}" onChange="{{ onFinTotalAssets }}"/>
+                </div>
+                <sc-if value="{{ hasBoardDoc }}" hint-placeholder-val="{{ false }}">
+                  <div contentEditable="true" suppressContentEditableWarning="{{ true }}" onBlur="{{ boardOnBlur }}" dangerouslySetInnerHTML="{{ boardHtml }}" style="font-family:'Source Serif 4',Georgia,serif;font-size:14px;line-height:1.7;background:var(--color-bg);border:1px solid var(--color-neutral-300);border-radius:var(--radius-sm);padding:20px;min-height:240px;max-height:420px;overflow-y:auto;margin-bottom:var(--space-3);"></div>
+                  <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="btn btn-secondary blueprint" onClick="{{ exportBoardPdf }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export PDF</button>
+                    <button class="btn btn-secondary blueprint" onClick="{{ exportBoardDocx }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export DOCX</button>
+                    <button class="btn btn-ghost" onClick="{{ generateBoardReport }}" style="margin-left:auto;">Regenerate from data</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ noBoardDoc }}" hint-placeholder-val="{{ true }}">
+                  <button class="btn btn-primary blueprint" onClick="{{ generateBoardReport }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Generate Board Report</button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ docTabAuditorActive }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);">
+                <div style="font-size:12px;color:var(--color-neutral-700);">These are externally produced — Niyaman only tracks that they're ready for filing.</div>
+                <sc-for list="{{ checklistRows }}" as="c" hint-placeholder-count="2">
+                  <div class="card blueprint" style="padding:var(--space-3);">
+                    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                      <input type="checkbox" checked="{{ c.received }}" onChange="{{ c.onToggle }}"/> {{ c.label }}
+                    </label>
+                    <input class="input" type="text" placeholder="Upload reference / filename (placeholder)" value="{{ c.reference }}" onChange="{{ c.onRefChange }}" style="margin-top:8px;width:100%;box-sizing:border-box;"/>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ docTabGenerateActive }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);">
+                <div style="font-size:12px;color:var(--color-neutral-700);">Generate other one-off OCR filings for this company (share transfer, closure, capital change…) from a short form. Not part of the AGM filing itself.</div>
+                <div class="field"><label>Document Type</label>
+                  <select class="input" value="{{ adhocTypeId }}" onChange="{{ onAdhocTypeChange }}">
+                    <sc-for list="{{ adhocTypeOptions }}" as="t" hint-placeholder-count="5"><option value="{{ t.id }}">{{ t.label }}</option></sc-for>
+                  </select>
+                </div>
+                <sc-for list="{{ adhocFieldRows }}" as="f" hint-placeholder-count="3">
+                  <div class="field"><label>{{ f.label }}</label><input class="input" type="{{ f.inputType }}" value="{{ f.value }}" onChange="{{ f.onChange }}"/></div>
+                </sc-for>
+                <button class="btn btn-primary blueprint" onClick="{{ generateAdhocDoc }}" style="align-self:flex-start;"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Generate Document</button>
+
+                <sc-if value="{{ hasAdhocDocs }}" hint-placeholder-val="{{ false }}">
+                  <div class="card-kicker" style="margin-top:var(--space-3);">Generated Documents</div>
+                  <sc-for list="{{ adhocDocRows }}" as="d" hint-placeholder-count="1">
+                    <div class="card blueprint" style="padding:var(--space-3);">
+                      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                      <div class="card-title" style="margin-bottom:8px;">{{ d.docLabel }}</div>
+                      <div contentEditable="true" suppressContentEditableWarning="{{ true }}" onBlur="{{ d.onBlur }}" dangerouslySetInnerHTML="{{ d.html }}" style="font-family:'Source Serif 4',Georgia,serif;font-size:14px;line-height:1.7;background:var(--color-bg);border:1px solid var(--color-neutral-300);border-radius:var(--radius-sm);padding:20px;min-height:180px;max-height:380px;overflow-y:auto;margin-bottom:var(--space-3);"></div>
+                      <div style="display:flex;gap:8px;">
+                        <button class="btn btn-secondary blueprint" onClick="{{ d.onExportPdf }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export PDF</button>
+                        <button class="btn btn-secondary blueprint" onClick="{{ d.onExportDocx }}"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Export DOCX</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ viewNotifications }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 40px;max-width:800px;">
+        <h1 style="font-size:22px;margin:0 0 18px;">Notification Log</h1>
+        <div style="font-size:12px;color:oklch(45% 0.01 90);margin-bottom:18px;">Mocked — no real email is sent in this prototype. This log stands in for the dashboard/email reminder concept.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ notificationRows }}" as="n" hint-placeholder-count="2">
+            <div style="background:white;border:1px solid oklch(90% 0.005 90);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:16px;opacity:{{ n.opacity }};">
+              <div>
+                <div style="font-size:13px;">{{ n.message }}</div>
+                <div style="font-size:11px;color:oklch(50% 0.01 90);margin-top:4px;">{{ n.companyName }} · created {{ n.createdAtDisplay }}</div>
+              </div>
+              <button onClick="{{ n.onToggle }}" style="flex-shrink:0;background:white;border:1px solid oklch(85% 0.005 90);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">{{ n.toggleLabel }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+function formatDate(iso) {
+  if (!iso) return '[date to be scheduled]';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function shortDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+function fmtMoney(n) {
+  if (n === '' || n === undefined || n === null) return '0';
+  const num = Number(String(n).replace(/,/g, ''));
+  if (isNaN(num)) return String(n);
+  return num.toLocaleString('en-US');
+}
+function draftMinutesTemplate(co, agm) {
+  const agenda = (agm.agendaItems || []).filter(Boolean).length
+    ? agm.agendaItems.filter(Boolean).map(a => '<li>' + a + '</li>').join('')
+    : '<li>[agenda pending]</li>';
+  const notesPara = agm.discussionNotes
+    ? '<p>' + agm.discussionNotes + '</p>'
+    : '<p>[Add discussion notes on the left to generate resolution language.]</p>';
+  const d = agm.decisions || {};
+  const resolutions = [];
+  resolutions.push('<p><strong>1. Approval of Annual Accounts.</strong> IT WAS RESOLVED THAT the financial statements of the Company for fiscal year ' + (agm.fiscalYear || '[FY]') + ' be and are hereby approved.</p>');
+  if (d.dividendDeclared) resolutions.push('<p><strong>' + (resolutions.length + 1) + '. Dividend.</strong> IT WAS RESOLVED THAT a dividend of ' + (d.dividendPercent || '[ ]') + '% on paid-up capital be declared for fiscal year ' + (agm.fiscalYear || '[FY]') + '.</p>');
+  if (d.auditorAppointment) resolutions.push('<p><strong>' + (resolutions.length + 1) + '. Auditor.</strong> IT WAS RESOLVED THAT ' + d.auditorAppointment + ' be and is hereby appointed as statutory auditor of the Company.</p>');
+  if (d.directorChanges && d.directorChanges.trim().toLowerCase() !== 'none') resolutions.push('<p><strong>' + (resolutions.length + 1) + '. Board Changes.</strong> IT WAS RESOLVED THAT ' + d.directorChanges + '.</p>');
+  if (d.remuneration) resolutions.push('<p><strong>' + (resolutions.length + 1) + '. Remuneration.</strong> IT WAS RESOLVED THAT ' + d.remuneration + '.</p>');
+  return '<p style="text-align:center"><strong>MINUTES OF THE ANNUAL GENERAL MEETING</strong><br/>of ' + co.nameEnglish + (co.nameNepali ? ' (' + co.nameNepali + ')' : '') + '</p>' +
+    '<p>Held on ' + formatDate(agm.meetingDate) + ' at the registered office, ' + co.registeredAddress + '.</p>' +
+    '<p>Present: the Board of Directors and shareholders holding a quorum of paid-up capital, as recorded in the attendance register.</p>' +
+    '<p>The Chairperson called the meeting to order and confirmed that notice had been duly given in accordance with Section 76 of the Companies Act, 2063, and that a quorum was present.</p>' +
+    '<p><strong>Agenda:</strong></p><ul>' + agenda + '</ul>' +
+    '<p><strong>Discussion:</strong></p>' + notesPara +
+    '<p><strong>Resolutions:</strong></p>' + resolutions.join('') +
+    '<p>There being no further business, the meeting concluded with a vote of thanks to the Chair.</p>' +
+    '<p>______________________<br/>Chairperson, for and on behalf of the Board</p>';
+}
+function refineTextTemplate(current, instruction) {
+  let text = current;
+  const lower = instruction.toLowerCase();
+  let matched = false;
+  if (lower.includes('formal')) {
+    text = text.replace(/\bwas discussed\b/gi, 'was duly deliberated upon by the Board and shareholders');
+    text += '<p style="margin-top:8px"><em>[Refined for a more formal register.]</em></p>';
+    matched = true;
+  }
+  if (lower.includes('short')) {
+    const parts = text.split('</p>').filter(Boolean);
+    const keep = Math.max(3, Math.ceil(parts.length * 0.6));
+    text = parts.slice(0, keep).join('</p>') + '</p>';
+    matched = true;
+  }
+  if (lower.includes('auditor')) {
+    text += '<p><strong>Additional Resolution — Auditor Reappointment.</strong> IT WAS FURTHER RESOLVED THAT the statutory auditor be reappointed for the ensuing fiscal year, subject to fee confirmation.</p>';
+    matched = true;
+  }
+  if (!matched) text += '<p style="margin-top:8px"><em>[Refined per instruction: "' + instruction + '"]</em></p>';
+  return text;
+}
+function noticeTemplate(co, agm) {
+  const agenda = (agm.agendaItems || []).filter(Boolean).length
+    ? agm.agendaItems.filter(Boolean).map(a => '<li>' + a + '</li>').join('')
+    : '<li>[agenda pending]</li>';
+  return '<p style="text-align:center"><strong>' + co.nameEnglish.toUpperCase() + '</strong><br/>' + co.nameNepali + '<br/>' + co.registeredAddress + '</p>' +
+    '<p style="text-align:center"><strong>NOTICE OF ANNUAL GENERAL MEETING</strong></p>' +
+    "<p>Notice is hereby given, pursuant to Section 76 of the Companies Act, 2063 (which requires at least 21 days' prior notice), that the Annual General Meeting of the shareholders of " + co.nameEnglish + ' for fiscal year ' + (agm.fiscalYear || '[FY]') + ' will be held on ' + formatDate(agm.meetingDate) + ' at the registered office, ' + co.registeredAddress + ', to transact the following business:</p>' +
+    '<ol>' + agenda + '</ol>' +
+    '<p>By Order of the Board of Directors.</p>' +
+    '<p>______________________<br/>Director / Company Secretary<br/>Date of Notice: [to be inserted, at least 21 days before the meeting]</p>';
+}
+function boardReportTemplate(co, agm, typeLabel) {
+  const f = agm.financials || {};
+  const d = agm.decisions || {};
+  return '<p style="text-align:center"><strong>' + co.nameEnglish.toUpperCase() + '</strong><br/>' + co.nameNepali + '</p>' +
+    "<p style=\"text-align:center\"><strong>BOARD OF DIRECTORS' REPORT — FY " + (agm.fiscalYear || '[FY]') + '</strong></p>' +
+    "<p>The Board of Directors is pleased to present its report together with the audited financial statements for fiscal year " + (agm.fiscalYear || '[FY]') + '.</p>' +
+    '<p><strong>Company Overview.</strong> ' + co.nameEnglish + ' is registered as a ' + typeLabel + '. Registered office: ' + co.registeredAddress + '.</p>' +
+    '<p><strong>Financial Highlights.</strong> Total revenue: NPR ' + (f.revenue || '[ ]') + '. Net profit: NPR ' + (f.netProfit || '[ ]') + '. Total assets: NPR ' + (f.totalAssets || '[ ]') + '. ' + (f.notes || '') + '</p>' +
+    '<p><strong>Dividend.</strong> ' + (d.dividendDeclared ? ('The Board recommends a dividend of ' + d.dividendPercent + '% on paid-up capital.') : 'No dividend is recommended for this fiscal year.') + '</p>' +
+    '<p><strong>Auditor.</strong> ' + (d.auditorAppointment || '[Auditor appointment pending shareholder approval]') + '.</p>' +
+    '<p><strong>Board Changes.</strong> ' + (d.directorChanges || 'None during the year.') + '</p>' +
+    '<p>On behalf of the Board of Directors,</p><p>______________________<br/>Chairperson</p>';
+}
+const ADHOC_DOC_TYPES = [
+  { id: 'SHARE_TRANSFER', label: 'Share Transfer Application', fields: [
+    { key: 'transferorName', label: 'Transferor (Selling Shareholder)', inputType: 'text' },
+    { key: 'transfereeName', label: 'Transferee (Buyer)', inputType: 'text' },
+    { key: 'shares', label: 'Number of Shares', inputType: 'number' },
+    { key: 'pricePerShare', label: 'Price per Share (NPR)', inputType: 'number' },
+    { key: 'transferDate', label: 'Transfer Date', inputType: 'date' },
+  ] },
+  { id: 'COMPANY_CLOSURE', label: 'Company Closure (Deregistration) Application', fields: [
+    { key: 'closureReason', label: 'Reason for Closure', inputType: 'text' },
+    { key: 'resolutionDate', label: 'Date of Resolution to Close', inputType: 'date' },
+    { key: 'liabilitiesCleared', label: 'Confirmation Liabilities Cleared', inputType: 'text' },
+  ] },
+  { id: 'CAPITAL_CHANGE', label: 'Capital Change Application', fields: [
+    { key: 'newAuthorizedCapital', label: 'New Authorized Capital (NPR)', inputType: 'number' },
+    { key: 'newIssuedCapital', label: 'New Issued Capital (NPR)', inputType: 'number' },
+    { key: 'reason', label: 'Reason for Change', inputType: 'text' },
+  ] },
+  { id: 'DIRECTOR_CHANGE', label: 'Change of Director Application', fields: [
+    { key: 'outgoingDirector', label: 'Outgoing Director', inputType: 'text' },
+    { key: 'incomingDirector', label: 'Incoming Director', inputType: 'text' },
+    { key: 'effectiveDate', label: 'Effective Date', inputType: 'date' },
+  ] },
+  { id: 'COMPANY_TYPE_CONVERSION', label: 'Company Type Conversion Application', fields: [
+    { key: 'newType', label: 'New Company Type', inputType: 'text' },
+    { key: 'reason', label: 'Reason for Conversion', inputType: 'text' },
+  ] },
+];
+function adhocDocTemplate(co, typeDef, inputs) {
+  const rows = typeDef.fields.map(f => '<p><strong>' + f.label + ':</strong> ' + (inputs[f.key] || '[ ]') + '</p>').join('');
+  return '<p style="text-align:center"><strong>' + co.nameEnglish.toUpperCase() + '</strong><br/>' + co.nameNepali + '<br/>' + co.registeredAddress + '</p>' +
+    '<p style="text-align:center"><strong>' + typeDef.label.toUpperCase() + '</strong></p>' +
+    '<p>To: Office of the Company Registrar, Government of Nepal.</p>' +
+    '<p>The Board of Directors of ' + co.nameEnglish + ' (Registration No. ' + (co.registrationNumber || '[pending]') + ') respectfully submits this application under the relevant provisions of the Companies Act, 2063, with the following particulars:</p>' +
+    rows +
+    '<p>We request the Office to process the above and issue such approval or updated certificate as may be required.</p>' +
+    '<p>______________________<br/>Authorized Director / Company Secretary<br/>Date: ' + shortDate(new Date().toISOString().slice(0, 10)) + '</p>';
+}
+function defaultChecklist() {
+  return [
+    { key: 'auditorsReport', label: "Auditor's Report", received: false, reference: '' },
+    { key: 'financialStatements', label: 'Financial Statements', received: false, reference: '' },
+  ];
+}
+const DOC_LABELS = { Minutes: 'Minutes of the AGM', Notice: 'Notice of AGM', BoardReport: "Board of Directors' Report" };
+const TONE_COLORS = {
+  danger: { bg: 'oklch(93% 0.06 25)', fg: 'oklch(42% 0.16 25)' },
+  warn: { bg: 'oklch(94% 0.06 80)', fg: 'oklch(42% 0.12 70)' },
+  success: { bg: 'oklch(93% 0.06 150)', fg: 'oklch(38% 0.1 150)' },
+  neutral: { bg: 'oklch(93% 0.01 90)', fg: 'oklch(40% 0.01 90)' },
+};
+function badgeStyleStr(tone) {
+  const c = TONE_COLORS[tone] || TONE_COLORS.neutral;
+  return 'background:' + c.bg + ';color:' + c.fg + ';font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;';
+}
+
+class Component extends DCLogic {
+  state = {
+    loaded: false, workspaces: [], companies: [], obligationTypes: [], notifications: [], categories: [], types: [], niscCodes: [],
+    currentWorkspaceId: null, view: 'dashboard', selectedCompanyId: null, companyTab: 'overview',
+    selectedAgmId: null, agmTab: 'minutes', companyDraft: null, niscQuery: '', refineInstruction: '',
+    toast: null, printMode: false, printDocContent: '', adhocTypeId: ADHOC_DOC_TYPES[0].id, adhocInputs: {},
+  };
+
+  componentDidMount() {
+    const saved = localStorage.getItem('niyaman-v1');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        this.setState(Object.assign({}, parsed, { loaded: true, toast: null }), () => this.maybeShowStartupToast());
+        return;
+      } catch (e) {}
+    }
+    import('./SeedData.js').then(mod => {
+      const seed = mod.buildSeed();
+      this.setState(Object.assign({}, seed, { currentWorkspaceId: seed.workspaces[0].id, loaded: true }), () => this.maybeShowStartupToast());
+    });
+  }
+
+  componentDidUpdate() {
+    if (!this.state.loaded) return;
+    const s = this.state;
+    const persist = {
+      workspaces: s.workspaces, companies: s.companies, obligationTypes: s.obligationTypes, notifications: s.notifications,
+      categories: s.categories, types: s.types, niscCodes: s.niscCodes, currentWorkspaceId: s.currentWorkspaceId,
+      view: s.view, selectedCompanyId: s.selectedCompanyId, companyTab: s.companyTab, selectedAgmId: s.selectedAgmId, agmTab: s.agmTab,
+    };
+    localStorage.setItem('niyaman-v1', JSON.stringify(persist));
+  }
+
+  maybeShowStartupToast() {
+    if (this.state.toast) return;
+    const unread = this.state.notifications.find(n => !n.read);
+    if (unread) this.setState({ toast: { message: unread.message } });
+  }
+  dismissToast = () => this.setState({ toast: null });
+  exitPrintMode = () => this.setState({ printMode: false });
+
+  onWorkspaceChange = e => this.setState({ currentWorkspaceId: e.target.value, view: 'dashboard', selectedCompanyId: null });
+  goDashboard = () => this.setState({ view: 'dashboard', selectedCompanyId: null, selectedAgmId: null });
+  goNotifications = () => this.setState({ view: 'notifications' });
+
+  getSelectedCompany() { return this.state.companies.find(c => c.id === this.state.selectedCompanyId); }
+  getSelectedAgm() { const co = this.getSelectedCompany(); return co && co.agmCycles.find(a => a.id === this.state.selectedAgmId); }
+  typeLabel(code) { const t = this.state.types.find(x => x.code === code); return t ? t.label : code; }
+
+  openCompany = id => this.setState({ view: 'company', selectedCompanyId: id, companyTab: 'overview' });
+  setCompanyTab = tab => {
+    if (tab === 'profile') {
+      const co = this.getSelectedCompany();
+      this.setState({ view: 'company', companyTab: 'profile', companyDraft: JSON.parse(JSON.stringify(co)) });
+    } else {
+      this.setState({ view: 'company', companyTab: tab });
+    }
+  };
+
+  emptyCompanyDraft() {
+    return {
+      id: 'co-' + Date.now(), workspaceId: this.state.currentWorkspaceId, nameEnglish: '', nameNepali: '',
+      category: 'PRIVATE', type: 'PRIVATE_SOLE', registrationNumber: '', registeredWithOcr: false,
+      registeredAddress: '', fiscalYearEndConvention: 'Ashadh end (mid-July)', incorporationDate: '',
+      objectives: [], authorizedCapital: '', issuedCapital: '', paidUpCapital: '', parValue: 100,
+      shareholders: [], directors: [], complianceItems: [], agmCycles: [],
+    };
+  }
+  startNewCompany = () => this.setState({ view: 'newCompany', companyDraft: this.emptyCompanyDraft() });
+  cancelCompanyDraft = () => {
+    const exists = this.state.companies.some(c => c.id === (this.state.companyDraft || {}).id);
+    this.setState({ view: exists ? 'company' : 'dashboard', companyTab: 'overview', companyDraft: null });
+  };
+  updateDraftField = (field, value) => this.setState(s => ({ companyDraft: Object.assign({}, s.companyDraft, { [field]: value }) }));
+
+  addObjectiveToDraft = nisc => this.setState(s => ({
+    companyDraft: Object.assign({}, s.companyDraft, { objectives: [...s.companyDraft.objectives, { niscCode: nisc.code, nameEnglish: nisc.nameEnglish, nameNepali: nisc.nameNepali, customDescription: '' }] }),
+    niscQuery: '',
+  }));
+  removeObjectiveFromDraft = idx => this.setState(s => ({ companyDraft: Object.assign({}, s.companyDraft, { objectives: s.companyDraft.objectives.filter((_, i) => i !== idx) }) }));
+
+  addShareholderToDraft = () => this.setState(s => ({ companyDraft: Object.assign({}, s.companyDraft, { shareholders: [...s.companyDraft.shareholders, { id: 'sh-' + Date.now(), name: '', citizenshipRef: '', shares: '', shareClass: 'Ordinary', contact: '' }] }) }));
+  updateShareholderField = (idx, field, value) => this.setState(s => { const arr = s.companyDraft.shareholders.slice(); arr[idx] = Object.assign({}, arr[idx], { [field]: value }); return { companyDraft: Object.assign({}, s.companyDraft, { shareholders: arr }) }; });
+  removeShareholder = idx => this.setState(s => ({ companyDraft: Object.assign({}, s.companyDraft, { shareholders: s.companyDraft.shareholders.filter((_, i) => i !== idx) }) }));
+
+  addDirectorToDraft = () => this.setState(s => ({ companyDraft: Object.assign({}, s.companyDraft, { directors: [...s.companyDraft.directors, { id: 'd-' + Date.now(), name: '', role: 'Director', appointmentDate: '', contact: '' }] }) }));
+  updateDirectorField = (idx, field, value) => this.setState(s => { const arr = s.companyDraft.directors.slice(); arr[idx] = Object.assign({}, arr[idx], { [field]: value }); return { companyDraft: Object.assign({}, s.companyDraft, { directors: arr }) }; });
+  removeDirector = idx => this.setState(s => ({ companyDraft: Object.assign({}, s.companyDraft, { directors: s.companyDraft.directors.filter((_, i) => i !== idx) }) }));
+
+  saveCompanyDraft = () => {
+    const draft = this.state.companyDraft;
+    if (!draft.nameEnglish.trim()) { this.setState({ toast: { message: 'Company name (English) is required.' } }); return; }
+    this.setState(s => {
+      const exists = s.companies.some(c => c.id === draft.id);
+      const companies = exists ? s.companies.map(c => c.id === draft.id ? draft : c) : [...s.companies, draft];
+      return { companies, view: 'company', selectedCompanyId: draft.id, companyTab: 'overview', companyDraft: null, toast: { message: 'Company saved.' } };
+    });
+  };
+  onDeleteCompany = () => {
+    if (!window.confirm('Delete this company? This cannot be undone in the demo.')) return;
+    const id = this.state.companyDraft.id;
+    this.setState(s => ({ companies: s.companies.filter(c => c.id !== id), view: 'dashboard', selectedCompanyId: null, companyDraft: null }));
+  };
+
+  startAgmCycle = companyId => {
+    const cycle = { id: 'agm-' + Date.now(), fiscalYear: '', meetingDate: '', status: 'Draft', agendaItems: [], decisions: { dividendDeclared: false, dividendPercent: '', auditorAppointment: '', directorChanges: '', remuneration: '' }, discussionNotes: '', financials: { revenue: '', netProfit: '', totalAssets: '', notes: '' }, checklist: defaultChecklist(), documents: [] };
+    this.setState(s => ({
+      companies: s.companies.map(c => c.id === companyId ? Object.assign({}, c, { agmCycles: [...c.agmCycles, cycle] }) : c),
+      view: 'agm', selectedCompanyId: companyId, selectedAgmId: cycle.id, agmTab: 'minutes',
+    }));
+  };
+  openAgm = (companyId, agmId) => this.setState({ view: 'agm', selectedCompanyId: companyId, selectedAgmId: agmId, agmTab: 'minutes' });
+  setAgmTab = tab => this.setState({ agmTab: tab });
+  backToAgmTab = () => this.setState({ view: 'company', companyTab: 'agm', selectedAgmId: null });
+
+  updateAgm = updater => this.setState(s => ({
+    companies: s.companies.map(c => c.id !== s.selectedCompanyId ? c : Object.assign({}, c, { agmCycles: c.agmCycles.map(a => a.id !== s.selectedAgmId ? a : updater(a)) })),
+  }));
+  updateAgmField = (field, value) => this.updateAgm(a => Object.assign({}, a, { [field]: value }));
+  updateAgmDecision = (field, value) => this.updateAgm(a => Object.assign({}, a, { decisions: Object.assign({}, a.decisions, { [field]: value }) }));
+  updateAgmFinancial = (field, value) => this.updateAgm(a => Object.assign({}, a, { financials: Object.assign({}, a.financials, { [field]: value }) }));
+  updateChecklistItem = (key, field, value) => this.updateAgm(a => ({ ...a, checklist: (a.checklist || defaultChecklist()).map(c => c.key === key ? Object.assign({}, c, { [field]: value }) : c) }));
+
+  addAgendaItem = () => this.updateAgm(a => Object.assign({}, a, { agendaItems: [...a.agendaItems, ''] }));
+  updateAgendaItem = (idx, value) => this.updateAgm(a => { const arr = a.agendaItems.slice(); arr[idx] = value; return Object.assign({}, a, { agendaItems: arr }); });
+  removeAgendaItem = idx => this.updateAgm(a => Object.assign({}, a, { agendaItems: a.agendaItems.filter((_, i) => i !== idx) }));
+
+  markAgmHeld = () => this.updateAgm(a => Object.assign({}, a, { status: 'Held' }));
+  markAgmFiled = () => this.updateAgm(a => Object.assign({}, a, { status: 'Filed' }));
+
+  upsertDocument = (type, content) => this.updateAgm(a => {
+    const existing = a.documents.find(d => d.type === type);
+    if (existing) {
+      return Object.assign({}, a, { documents: a.documents.map(d => d.id === existing.id ? Object.assign({}, d, { content, versions: type === 'Minutes' ? [...d.versions, { content: d.content, at: new Date().toISOString() }] : d.versions }) : d) });
+    }
+    return Object.assign({}, a, { documents: [...a.documents, { id: 'doc-' + Date.now(), type, status: 'Draft', content, versions: [] }] });
+  });
+  updateDocumentContent = (docId, html) => this.updateAgm(a => Object.assign({}, a, { documents: a.documents.map(d => d.id === docId ? Object.assign({}, d, { content: html }) : d) }));
+
+  generateMinutes = () => { const co = this.getSelectedCompany(), agm = this.getSelectedAgm(); this.upsertDocument('Minutes', draftMinutesTemplate(co, agm)); this.setState({ toast: { message: 'AI draft generated.' } }); };
+  refineMinutes = () => {
+    const instruction = this.state.refineInstruction.trim();
+    if (!instruction) return;
+    const agm = this.getSelectedAgm();
+    const doc = agm.documents.find(d => d.type === 'Minutes');
+    const current = doc ? doc.content : draftMinutesTemplate(this.getSelectedCompany(), agm);
+    this.upsertDocument('Minutes', refineTextTemplate(current, instruction));
+    this.setState({ refineInstruction: '', toast: { message: 'Draft refined: "' + instruction + '"' } });
+  };
+  revertMinutesVersion = versionIdx => {
+    const agm = this.getSelectedAgm();
+    const doc = agm.documents.find(d => d.type === 'Minutes');
+    const version = doc.versions[versionIdx];
+    this.updateAgm(a => Object.assign({}, a, { documents: a.documents.map(d => d.id === doc.id ? Object.assign({}, d, { content: version.content, versions: d.versions.filter((_, i) => i !== versionIdx) }) : d) }));
+    this.setState({ toast: { message: 'Reverted to previous draft.' } });
+  };
+  generateNotice = () => { const co = this.getSelectedCompany(), agm = this.getSelectedAgm(); this.upsertDocument('Notice', noticeTemplate(co, agm)); };
+  generateBoardReport = () => { const co = this.getSelectedCompany(), agm = this.getSelectedAgm(); this.upsertDocument('BoardReport', boardReportTemplate(co, agm, this.typeLabel(co.type))); };
+
+  exportDocx = (doc, filename) => {
+    const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body style="font-family:Georgia,serif;font-size:12pt;line-height:1.6;">' + doc.content + '</body></html>';
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename + '.doc'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    this.setState({ toast: { message: 'Downloaded ' + filename + '.doc' } });
+  };
+  exportPdf = doc => {
+    this.setState({ printMode: true, printDocContent: doc.content }, () => {
+      setTimeout(() => { window.print(); }, 80);
+    });
+  };
+  toggleNotificationRead = id => this.setState(s => ({ notifications: s.notifications.map(n => n.id === id ? Object.assign({}, n, { read: !n.read }) : n) }));
+
+  setAdhocType = id => this.setState({ adhocTypeId: id, adhocInputs: {} });
+  updateAdhocInput = (key, value) => this.setState(s => ({ adhocInputs: Object.assign({}, s.adhocInputs, { [key]: value }) }));
+  generateAdhocDoc = () => {
+    const co = this.getSelectedCompany();
+    const typeDef = ADHOC_DOC_TYPES.find(t => t.id === this.state.adhocTypeId);
+    const content = adhocDocTemplate(co, typeDef, this.state.adhocInputs);
+    this.updateAgm(a => Object.assign({}, a, { adhocDocuments: [...(a.adhocDocuments || []), { id: 'adhoc-' + Date.now(), docTypeId: typeDef.id, docLabel: typeDef.label, content }] }));
+    this.setState({ adhocInputs: {}, toast: { message: typeDef.label + ' generated.' } });
+  };
+  updateAdhocDocContent = (docId, html) => this.updateAgm(a => Object.assign({}, a, { adhocDocuments: (a.adhocDocuments || []).map(d => d.id === docId ? Object.assign({}, d, { content: html }) : d) }));
+
+  complianceStatus(item) {
+    if (item.completed) return { label: 'Completed', tone: 'success' };
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const due = new Date(item.dueDate + 'T00:00:00');
+    const diffDays = Math.round((due - today) / 86400000);
+    if (diffDays < 0) return { label: 'Overdue by ' + Math.abs(diffDays) + ' day' + (Math.abs(diffDays) === 1 ? '' : 's'), tone: 'danger' };
+    if (diffDays <= 14) return { label: 'Due in ' + diffDays + ' day' + (diffDays === 1 ? '' : 's'), tone: 'warn' };
+    return { label: 'Due ' + shortDate(item.dueDate), tone: 'neutral' };
+  }
+
+  renderVals() {
+    const s = this.state;
+    if (!s.loaded) return { loaded: false, printMode: false, notPrintMode: true, viewDashboard: false };
+
+    const currentWorkspace = s.workspaces.find(w => w.id === s.currentWorkspaceId) || s.workspaces[0] || {};
+    const companiesInWs = s.companies.filter(c => c.workspaceId === s.currentWorkspaceId);
+
+    const companyCards = companiesInWs.map(co => {
+      const worst = co.complianceItems.map(ci => this.complianceStatus(ci)).sort((a, b) => (a.tone === 'danger' ? -1 : b.tone === 'danger' ? 1 : a.tone === 'warn' ? -1 : b.tone === 'warn' ? 1 : 0))[0] || { label: 'No obligations tracked', tone: 'neutral' };
+      return {
+        nameEnglish: co.nameEnglish, nameNepali: co.nameNepali, typeLabel: this.typeLabel(co.type),
+        regDisplay: co.registrationNumber || 'Not yet registered',
+        badgeStyle: badgeStyleStr(worst.tone), badgeLabel: worst.label,
+        onOpen: () => this.openCompany(co.id),
+      };
+    });
+
+    const view = s.view;
+    const selCoRaw = this.getSelectedCompany();
+    let selCo = null;
+    if (selCoRaw) {
+      selCo = {
+        nameEnglish: selCoRaw.nameEnglish, nameNepali: selCoRaw.nameNepali, typeLabel: this.typeLabel(selCoRaw.type),
+        regDisplay: selCoRaw.registrationNumber || 'Not yet registered',
+        shareholderCount: selCoRaw.shareholders.length, directorCount: selCoRaw.directors.length,
+        paidUpCapitalDisplay: fmtMoney(selCoRaw.paidUpCapital), authorizedCapitalDisplay: fmtMoney(selCoRaw.authorizedCapital),
+      };
+    }
+
+    const draft = s.companyDraft;
+    const niscResults = (draft && s.niscQuery) ? s.niscCodes.filter(n => {
+      const q = s.niscQuery.toLowerCase();
+      return n.code.toLowerCase().includes(q) || n.nameEnglish.toLowerCase().includes(q) || (n.nameNepali || '').includes(s.niscQuery);
+    }).slice(0, 8).map(n => ({ code: n.code, nameEnglish: n.nameEnglish, nameNepali: n.nameNepali, onAdd: () => this.addObjectiveToDraft(n) })) : [];
+
+    const objectiveRows = draft ? draft.objectives.map((o, i) => ({ niscCode: o.niscCode, nameEnglish: o.nameEnglish, nameNepali: o.nameNepali, onRemove: () => this.removeObjectiveFromDraft(i) })) : [];
+    const shareholderRows = draft ? draft.shareholders.map((sh, i) => ({
+      name: sh.name, citizenshipRef: sh.citizenshipRef, shares: sh.shares, shareClass: sh.shareClass, contact: sh.contact,
+      onNameChange: e => this.updateShareholderField(i, 'name', e.target.value),
+      onCitizenshipChange: e => this.updateShareholderField(i, 'citizenshipRef', e.target.value),
+      onSharesChange: e => this.updateShareholderField(i, 'shares', e.target.value),
+      onClassChange: e => this.updateShareholderField(i, 'shareClass', e.target.value),
+      onContactChange: e => this.updateShareholderField(i, 'contact', e.target.value),
+      onRemove: () => this.removeShareholder(i),
+    })) : [];
+    const directorRows = draft ? draft.directors.map((d, i) => ({
+      name: d.name, role: d.role, appointmentDate: d.appointmentDate, contact: d.contact,
+      onNameChange: e => this.updateDirectorField(i, 'name', e.target.value),
+      onRoleChange: e => this.updateDirectorField(i, 'role', e.target.value),
+      onAppointmentChange: e => this.updateDirectorField(i, 'appointmentDate', e.target.value),
+      onContactChange: e => this.updateDirectorField(i, 'contact', e.target.value),
+      onRemove: () => this.removeDirector(i),
+    })) : [];
+
+    let complianceRowsFull = [], complianceRowsShort = [];
+    if (selCoRaw) {
+      complianceRowsFull = selCoRaw.complianceItems.map(ci => {
+        const st = this.complianceStatus(ci);
+        const ob = s.obligationTypes.find(o => o.id === ci.obligationTypeId) || {};
+        return { label: ci.label, ruleText: ob.ruleText || '', legalRef: ob.legalRef || '', statusLabel: st.label, badgeStyle: badgeStyleStr(st.tone), completed: ci.completed, onToggle: () => this.setState(prev => ({ companies: prev.companies.map(c => c.id !== selCoRaw.id ? c : Object.assign({}, c, { complianceItems: c.complianceItems.map(x => x.id === ci.id ? Object.assign({}, x, { completed: !x.completed }) : x) })) })) };
+      });
+      complianceRowsShort = complianceRowsFull.slice(0, 3);
+    }
+
+    const agmCycleRows = selCoRaw ? selCoRaw.agmCycles.map(ag => ({
+      fiscalYear: ag.fiscalYear || '[unset]', meetingDateDisplay: ag.meetingDate ? formatDate(ag.meetingDate) : 'Meeting date not yet set',
+      status: ag.status, statusBadgeStyle: badgeStyleStr(ag.status === 'Filed' ? 'success' : ag.status === 'Held' ? 'neutral' : 'warn'),
+      onOpen: () => this.openAgm(selCoRaw.id, ag.id),
+    })) : [];
+
+    const selAgmRaw = this.getSelectedAgm();
+    let selAgm = null, agendaRows = [], hasMinutesDoc = false, minutesHtml = null, minutesVersionRows = [], hasNoticeDoc = false, noticeHtml = null, hasBoardDoc = false, boardHtml = null, checklistRows = [], adhocDocRows = [];
+    if (selAgmRaw) {
+      selAgm = {
+        fiscalYear: selAgmRaw.fiscalYear, fiscalYearOrPlaceholder: selAgmRaw.fiscalYear || '[unset]', meetingDate: selAgmRaw.meetingDate,
+        status: selAgmRaw.status, statusBadgeStyle: badgeStyleStr(selAgmRaw.status === 'Filed' ? 'success' : selAgmRaw.status === 'Held' ? 'neutral' : 'warn'),
+        statusTagClass: selAgmRaw.status === 'Filed' ? 'tag-accent' : selAgmRaw.status === 'Held' ? 'tag-outline' : 'tag-neutral',
+        decisions: selAgmRaw.decisions, discussionNotes: selAgmRaw.discussionNotes, financials: selAgmRaw.financials || { revenue: '', netProfit: '', totalAssets: '' },
+      };
+      adhocDocRows = (selAgmRaw.adhocDocuments || []).map(d => ({
+        docLabel: d.docLabel, html: { __html: d.content },
+        onBlur: e => this.updateAdhocDocContent(d.id, e.target.innerHTML),
+        onExportPdf: () => this.exportPdf(d),
+        onExportDocx: () => this.exportDocx(d, (selCoRaw.nameEnglish + '-' + d.docLabel).replace(/\s+/g, '_')),
+      }));
+      agendaRows = selAgmRaw.agendaItems.map((a, i) => ({ text: a, onChange: e => this.updateAgendaItem(i, e.target.value), onRemove: () => this.removeAgendaItem(i) }));
+      const minutesDoc = selAgmRaw.documents.find(d => d.type === 'Minutes');
+      hasMinutesDoc = !!minutesDoc;
+      if (minutesDoc) {
+        minutesHtml = { __html: minutesDoc.content };
+        minutesVersionRows = minutesDoc.versions.slice().reverse().map((v, ri) => {
+          const realIdx = minutesDoc.versions.length - 1 - ri;
+          return { label: 'Draft from ' + new Date(v.at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), onRevert: () => this.revertMinutesVersion(realIdx) };
+        });
+      }
+      const noticeDoc = selAgmRaw.documents.find(d => d.type === 'Notice');
+      hasNoticeDoc = !!noticeDoc; if (noticeDoc) noticeHtml = { __html: noticeDoc.content };
+      const boardDoc = selAgmRaw.documents.find(d => d.type === 'BoardReport');
+      hasBoardDoc = !!boardDoc; if (boardDoc) boardHtml = { __html: boardDoc.content };
+      checklistRows = (selAgmRaw.checklist || defaultChecklist()).map(c => ({
+        key: c.key, label: c.label, received: c.received, reference: c.reference,
+        onToggle: () => this.updateChecklistItem(c.key, 'received', !c.received),
+        onRefChange: e => this.updateChecklistItem(c.key, 'reference', e.target.value),
+      }));
+    }
+
+    const notificationRows = s.notifications.map(n => {
+      const co = s.companies.find(c => c.id === n.companyId);
+      return { message: n.message, companyName: co ? co.nameEnglish : '', createdAtDisplay: shortDate(n.createdAt.slice(0, 10)), opacity: n.read ? '0.55' : '1', toggleLabel: n.read ? 'Mark unread' : 'Mark read', onToggle: () => this.toggleNotificationRead(n.id) };
+    });
+
+    const active = { minutes: 'minutes', notice: 'notice', board: 'board', auditor: 'auditor' };
+    const accent = 'oklch(40% 0.09 190)', muted = 'oklch(45% 0.01 90)', transparent = 'transparent';
+
+    return {
+      loaded: true, printMode: s.printMode, notPrintMode: !s.printMode,
+      printDocHtml: { __html: s.printDocContent }, exitPrintMode: this.exitPrintMode,
+
+      workspaces: s.workspaces, currentWorkspaceId: s.currentWorkspaceId, onWorkspaceChange: this.onWorkspaceChange,
+      currentWorkspaceTagline: currentWorkspace.tagline || '',
+      goDashboard: this.goDashboard, goNotifications: this.goNotifications,
+      dashboardNavBg: view === 'dashboard' || view === 'company' || view === 'agm' || view === 'newCompany' ? 'oklch(32% 0.03 250)' : transparent,
+      dashboardNavColor: view === 'dashboard' || view === 'company' || view === 'agm' || view === 'newCompany' ? 'white' : 'oklch(85% 0.01 250)',
+      notifNavBg: view === 'notifications' ? 'oklch(32% 0.03 250)' : transparent,
+      notifNavColor: view === 'notifications' ? 'white' : 'oklch(85% 0.01 250)',
+      hasUnread: s.notifications.some(n => !n.read), unreadCount: s.notifications.filter(n => !n.read).length,
+
+      toast: s.toast, dismissToast: this.dismissToast,
+
+      viewDashboard: view === 'dashboard', companyCards, noCompanies: companyCards.length === 0, startNewCompany: this.startNewCompany,
+
+      viewCompanyForm: view === 'newCompany' || (view === 'company' && s.companyTab === 'profile'),
+      formHeading: view === 'newCompany' ? 'New Company' : 'Edit Company Profile',
+      draft: draft ? Object.assign({}, draft, { registeredWithOcrStr: draft.registeredWithOcr ? 'yes' : 'no' }) : {},
+      onDraftNameEnglish: e => this.updateDraftField('nameEnglish', e.target.value),
+      onDraftNameNepali: e => this.updateDraftField('nameNepali', e.target.value),
+      onDraftCategory: e => this.updateDraftField('category', e.target.value),
+      onDraftType: e => this.updateDraftField('type', e.target.value),
+      onDraftRegisteredWithOcr: e => this.updateDraftField('registeredWithOcr', e.target.value === 'yes'),
+      onDraftRegNumber: e => this.updateDraftField('registrationNumber', e.target.value),
+      onDraftIncorpDate: e => this.updateDraftField('incorporationDate', e.target.value),
+      onDraftFyEnd: e => this.updateDraftField('fiscalYearEndConvention', e.target.value),
+      onDraftAddress: e => this.updateDraftField('registeredAddress', e.target.value),
+      onDraftAuthCap: e => this.updateDraftField('authorizedCapital', e.target.value),
+      onDraftIssuedCap: e => this.updateDraftField('issuedCapital', e.target.value),
+      onDraftPaidCap: e => this.updateDraftField('paidUpCapital', e.target.value),
+      onDraftParValue: e => this.updateDraftField('parValue', e.target.value),
+      categories: s.categories, types: s.types,
+      niscQuery: s.niscQuery, onNiscQueryChange: e => this.setState({ niscQuery: e.target.value }),
+      hasNiscResults: niscResults.length > 0, niscResults,
+      objectiveRows, noObjectives: objectiveRows.length === 0,
+      shareholderRows, noShareholders: shareholderRows.length === 0, addShareholderToDraft: this.addShareholderToDraft,
+      directorRows, noDirectors: directorRows.length === 0, addDirectorToDraft: this.addDirectorToDraft,
+      saveCompanyDraft: this.saveCompanyDraft, cancelCompanyDraft: this.cancelCompanyDraft,
+      showDeleteButton: view === 'company' && s.companyTab === 'profile', onDeleteCompany: this.onDeleteCompany,
+
+      viewCompanyDetail: view === 'company' && s.companyTab !== 'profile', selCo,
+      startAgmFromHeader: () => this.startAgmCycle(selCoRaw.id),
+      tabOverviewActive: s.companyTab === 'overview', tabProfileActive: false,
+      tabComplianceActive: s.companyTab === 'compliance', tabAgmActive: s.companyTab === 'agm',
+      tabOverviewClick: () => this.setCompanyTab('overview'), tabProfileClick: () => this.setCompanyTab('profile'),
+      tabComplianceClick: () => this.setCompanyTab('compliance'), tabAgmClick: () => this.setCompanyTab('agm'),
+      tabOverviewBorder: s.companyTab === 'overview' ? accent : transparent, tabOverviewColor: s.companyTab === 'overview' ? accent : muted,
+      tabProfileBorder: transparent, tabProfileColor: muted,
+      tabComplianceBorder: s.companyTab === 'compliance' ? accent : transparent, tabComplianceColor: s.companyTab === 'compliance' ? accent : muted,
+      tabAgmBorder: s.companyTab === 'agm' ? accent : transparent, tabAgmColor: s.companyTab === 'agm' ? accent : muted,
+      complianceRowsShort, complianceRowsFull, agmCycleRows, noAgmCycles: agmCycleRows.length === 0,
+
+      viewAgm: view === 'agm', selAgm,
+      backToAgmTab: this.backToAgmTab,
+      onAgmFiscalYear: e => this.updateAgmField('fiscalYear', e.target.value),
+      onAgmMeetingDate: e => this.updateAgmField('meetingDate', e.target.value),
+      agendaRows, addAgendaItem: this.addAgendaItem,
+      onDividendDeclaredToggle: e => this.updateAgmDecision('dividendDeclared', e.target.checked),
+      onDividendPercent: e => this.updateAgmDecision('dividendPercent', e.target.value),
+      onAuditorAppointment: e => this.updateAgmDecision('auditorAppointment', e.target.value),
+      onDirectorChanges: e => this.updateAgmDecision('directorChanges', e.target.value),
+      onRemuneration: e => this.updateAgmDecision('remuneration', e.target.value),
+      onDiscussionNotes: e => this.updateAgmField('discussionNotes', e.target.value),
+      markAgmHeld: this.markAgmHeld, markAgmFiled: this.markAgmFiled,
+
+      docTabMinutesActive: s.agmTab === 'minutes', docTabNoticeActive: s.agmTab === 'notice', docTabBoardActive: s.agmTab === 'board', docTabAuditorActive: s.agmTab === 'auditor',
+      docTabMinutesClick: () => this.setAgmTab('minutes'), docTabNoticeClick: () => this.setAgmTab('notice'), docTabBoardClick: () => this.setAgmTab('board'), docTabAuditorClick: () => this.setAgmTab('auditor'),
+      docTabMinutesBorder: s.agmTab === 'minutes' ? accent : transparent, docTabMinutesColor: s.agmTab === 'minutes' ? accent : muted,
+      docTabNoticeBorder: s.agmTab === 'notice' ? accent : transparent, docTabNoticeColor: s.agmTab === 'notice' ? accent : muted,
+      docTabBoardBorder: s.agmTab === 'board' ? accent : transparent, docTabBoardColor: s.agmTab === 'board' ? accent : muted,
+      docTabAuditorBorder: s.agmTab === 'auditor' ? accent : transparent, docTabAuditorColor: s.agmTab === 'auditor' ? accent : muted,
+
+      hasMinutesDoc, noMinutesDoc: !hasMinutesDoc, minutesHtml, generateMinutes: this.generateMinutes,
+      minutesOnBlur: e => { const doc = selAgmRaw.documents.find(d => d.type === 'Minutes'); if (doc) this.updateDocumentContent(doc.id, e.target.innerHTML); },
+      refineInstruction: s.refineInstruction, onRefineInstructionChange: e => this.setState({ refineInstruction: e.target.value }), refineMinutes: this.refineMinutes,
+      exportMinutesPdf: () => this.exportPdf(selAgmRaw.documents.find(d => d.type === 'Minutes')),
+      exportMinutesDocx: () => this.exportDocx(selAgmRaw.documents.find(d => d.type === 'Minutes'), (selCoRaw.nameEnglish + '-Minutes').replace(/\s+/g, '_')),
+      hasMinutesVersions: minutesVersionRows.length > 0, minutesVersionRows,
+
+      hasNoticeDoc, noNoticeDoc: !hasNoticeDoc, noticeHtml, generateNotice: this.generateNotice,
+      noticeOnBlur: e => { const doc = selAgmRaw.documents.find(d => d.type === 'Notice'); if (doc) this.updateDocumentContent(doc.id, e.target.innerHTML); },
+      exportNoticePdf: () => this.exportPdf(selAgmRaw.documents.find(d => d.type === 'Notice')),
+      exportNoticeDocx: () => this.exportDocx(selAgmRaw.documents.find(d => d.type === 'Notice'), (selCoRaw.nameEnglish + '-Notice').replace(/\s+/g, '_')),
+
+      hasBoardDoc, noBoardDoc: !hasBoardDoc, boardHtml, generateBoardReport: this.generateBoardReport,
+      boardOnBlur: e => { const doc = selAgmRaw.documents.find(d => d.type === 'BoardReport'); if (doc) this.updateDocumentContent(doc.id, e.target.innerHTML); },
+      exportBoardPdf: () => this.exportPdf(selAgmRaw.documents.find(d => d.type === 'BoardReport')),
+      exportBoardDocx: () => this.exportDocx(selAgmRaw.documents.find(d => d.type === 'BoardReport'), (selCoRaw.nameEnglish + '-BoardReport').replace(/\s+/g, '_')),
+      onFinRevenue: e => this.updateAgmFinancial('revenue', e.target.value),
+      onFinNetProfit: e => this.updateAgmFinancial('netProfit', e.target.value),
+      onFinTotalAssets: e => this.updateAgmFinancial('totalAssets', e.target.value),
+
+      checklistRows,
+
+      docTabGenerateActive: s.agmTab === 'generate', docTabGenerateClick: () => this.setAgmTab('generate'),
+      adhocTypeId: s.adhocTypeId, onAdhocTypeChange: e => this.setAdhocType(e.target.value),
+      adhocTypeOptions: ADHOC_DOC_TYPES.map(t => ({ id: t.id, label: t.label })),
+      adhocFieldRows: (ADHOC_DOC_TYPES.find(t => t.id === s.adhocTypeId) || ADHOC_DOC_TYPES[0]).fields.map(f => ({
+        label: f.label, inputType: f.inputType, value: s.adhocInputs[f.key] || '',
+        onChange: e => this.updateAdhocInput(f.key, e.target.value),
+      })),
+      generateAdhocDoc: this.generateAdhocDoc, hasAdhocDocs: adhocDocRows.length > 0, adhocDocRows,
+
+      viewNotifications: view === 'notifications', notificationRows,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
